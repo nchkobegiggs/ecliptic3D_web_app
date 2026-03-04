@@ -77,14 +77,14 @@ export interface AppState {
 
 /** 8 Discrete Moon Phases (Phase Angle in Radians) */
 export const MOON_PHASES = [
-    { label: '新月 (朔)', rad: 0 },
-    { label: '娥眉月', rad: Math.PI / 4 },
-    { label: '上弦月', rad: Math.PI / 2 },
-    { label: '盈凸月', rad: (3 * Math.PI) / 4 },
-    { label: '满月 (望)', rad: Math.PI },
-    { label: '亏凸月', rad: (5 * Math.PI) / 4 },
-    { label: '下弦月', rad: (3 * Math.PI) / 2 },
-    { label: '残月', rad: (7 * Math.PI) / 4 },
+    { label: '新月 New Moon', rad: 0 },
+    { label: '娥眉月 Waxing Crescent', rad: Math.PI / 4 },
+    { label: '上弦月 First Quarter', rad: Math.PI / 2 },
+    { label: '盈凸月 Waxing Gibbous', rad: (3 * Math.PI) / 4 },
+    { label: '满月 Full Moon', rad: Math.PI },
+    { label: '亏凸月 Waning Gibbous', rad: (5 * Math.PI) / 4 },
+    { label: '下弦月 Last Quarter', rad: (3 * Math.PI) / 2 },
+    { label: '残月 Waning Crescent', rad: (7 * Math.PI) / 4 },
 ]
 
 /** Unified Sky Update Helper (v0.7 Sync Fix) */
@@ -98,22 +98,38 @@ function computeSkyState(s: Partial<AppState> & {
     return getSkyInfo(s.seasonLambdaRad, s.nodeOmegaRad, s.moonPhaseRad, s.latitudeDeg, s.solarTimeHours)
 }
 
+const INITIAL_SEASON = 'vernal' as Season
+const INITIAL_SEASON_LAMBDA = SEASON_LAMBDA[INITIAL_SEASON]
+const INITIAL_MOON_PHASE = 0
+const INITIAL_NODE_OMEGA = 0
+const INITIAL_LATITUDE = 37
+const INITIAL_SOLAR_TIME = 0
+const INITIAL_SPEED = 0
+const INITIAL_PAUSED = true
+const INITIAL_SKY = computeSkyState({
+    seasonLambdaRad: INITIAL_SEASON_LAMBDA,
+    nodeOmegaRad: INITIAL_NODE_OMEGA,
+    moonPhaseRad: INITIAL_MOON_PHASE,
+    latitudeDeg: INITIAL_LATITUDE,
+    solarTimeHours: INITIAL_SOLAR_TIME
+})
+
 /* ────────────────────────────────────────────────────────
  *  Store implementation
  * ──────────────────────────────────────────────────────── */
 export const useStore = create<AppState>((set) => ({
-    season: 'vernal',
-    seasonLambdaRad: SEASON_LAMBDA.vernal,
-    moonPhaseRad: 0,
-    nodeOmegaRad: 0,
-    lunarEquatorAngleDeg: computeLunarEquatorAngle(EPSILON_RAD, INCL_RAD, 0),
+    season: INITIAL_SEASON,
+    seasonLambdaRad: INITIAL_SEASON_LAMBDA,
+    moonPhaseRad: INITIAL_MOON_PHASE,
+    nodeOmegaRad: INITIAL_NODE_OMEGA,
+    lunarEquatorAngleDeg: computeLunarEquatorAngle(EPSILON_RAD, INCL_RAD, INITIAL_NODE_OMEGA),
 
-    latitudeDeg: 40,
+    latitudeDeg: INITIAL_LATITUDE,
 
-    speed: 0.2, // Default: slower for stability
+    speed: INITIAL_SPEED, // 24h / 12s (slowest)
     headingAz: 180, // Facing South by default
-    paused: false,
-    solarTimeHours: 0,
+    paused: INITIAL_PAUSED,
+    solarTimeHours: INITIAL_SOLAR_TIME,
 
     showLabels: true,
 
@@ -125,10 +141,7 @@ export const useStore = create<AppState>((set) => ({
         nLunar: [0, 0, 0],
     },
 
-    skyInfo: {
-        sun: { alt: 0, az: 0 },
-        moon: { alt: 0, az: 0 },
-    },
+    skyInfo: INITIAL_SKY,
 
     /* ── Actions ── */
     setSeason: (s) => set((st) => {
