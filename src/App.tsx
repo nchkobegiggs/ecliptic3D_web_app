@@ -60,8 +60,14 @@ function App() {
         <main className="mt-5 grid grid-cols-[2fr_1fr] gap-5 max-[1100px]:grid-cols-1">
           <section className="app-card overflow-hidden">
             <div className="card-head">
-              <h2 className="card-title">轨道视图 Orbit View</h2>
-              <p className="card-subtitle">日月地三维几何 Sun-Earth-Moon 3D Geometry</p>
+              <h2 className="bi-title">
+                <span className="bi-title-zh">轨道视图</span>
+                <span className="bi-title-en">ORBIT VIEW</span>
+              </h2>
+              <p className="bi-subtitle">
+                <span className="bi-subtitle-zh">日月地三维几何</span>
+                <span className="bi-subtitle-en">Sun-Earth-Moon 3D Geometry</span>
+              </p>
             </div>
             <div className="h-[520px] max-[1100px]:h-[420px] max-[700px]:h-[320px] bg-black">
               <ThreeScene />

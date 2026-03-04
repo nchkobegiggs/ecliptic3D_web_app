@@ -146,8 +146,8 @@ export default function SkyView() {
         const chartW = rect.width - pX * 2
         if (chartW <= 0) return
 
-        const horizonY = rect.height * 0.7
-        const altToY = (alt: number) => horizonY - (alt / 90) * (rect.height * 0.6)
+        const horizonY = rect.height * 0.72
+        const altToY = (alt: number) => horizonY - (alt / 90) * (rect.height * 0.64)
         const markerX = pX + (solarTimeHours / 24) * chartW
         const sunY = altToY(currentSun.alt)
         const moonY = altToY(currentMoon.alt)
@@ -205,6 +205,7 @@ export default function SkyView() {
 
         const pX = 30
         const chartW = w - pX * 2
+        const plotBottomY = h - 22
         const horizonY = h * 0.72
         const timeToX = (t: number) => pX + t * chartW
         const altToY = (alt: number) => horizonY - (alt / 90) * (h * 0.64)
@@ -224,7 +225,7 @@ export default function SkyView() {
         for (let alt = -85; alt <= 90; alt += 5) {
             if (alt === 0 || alt % 15 === 0) continue
             const y = altToY(alt)
-            if (y < 0 || y > h - 22) continue
+            if (y < 0 || y > plotBottomY) continue
             ctx.beginPath(); ctx.moveTo(pX, y); ctx.lineTo(w - pX, y); ctx.stroke()
         }
 
@@ -233,7 +234,7 @@ export default function SkyView() {
         for (let alt = -75; alt <= 90; alt += 15) {
             if (alt === 0) continue
             const y = altToY(alt)
-            if (y < 0 || y > h - 22) continue
+            if (y < 0 || y > plotBottomY) continue
             ctx.beginPath(); ctx.moveTo(pX, y); ctx.lineTo(w - pX, y); ctx.stroke()
         }
 
@@ -265,8 +266,6 @@ export default function SkyView() {
             })
             ctx.stroke()
         }
-        drawTrack(sunTrack, 'rgba(253,184,19,0.78)')
-        drawTrack(moonTrack, 'rgba(154,168,255,0.78)')
 
         const drawMarker = (p: AltAz, color: string, label: string) => {
             const x = timeToX(solarTimeHours / 24)
@@ -280,13 +279,21 @@ export default function SkyView() {
                 ctx.fillText(label, x, y - 12)
             }
         }
+        // Clip plotted bodies/tracks to chart area so curves never overlap time-axis labels.
+        ctx.save()
+        ctx.beginPath()
+        ctx.rect(pX, 0, chartW, plotBottomY)
+        ctx.clip()
+        drawTrack(sunTrack, 'rgba(253,184,19,0.78)')
+        drawTrack(moonTrack, 'rgba(154,168,255,0.78)')
         drawMarker(currentSun, '#FDB813', 'SUN 太阳')
         drawMarker(currentMoon, '#9AA8FF', 'MOON 月亮')
+        ctx.restore()
 
         const cursorX = timeToX(solarTimeHours / 24)
         ctx.strokeStyle = 'rgba(230,237,243,0.45)'
         ctx.lineWidth = 1.3
-        ctx.beginPath(); ctx.moveTo(cursorX, 0); ctx.lineTo(cursorX, h - 22); ctx.stroke()
+        ctx.beginPath(); ctx.moveTo(cursorX, 0); ctx.lineTo(cursorX, plotBottomY); ctx.stroke()
 
         const drawTooltip = (x: number, y: number, label: string, color: string, p: AltAz) => {
             const width = 132
@@ -458,8 +465,14 @@ export default function SkyView() {
             <section className="app-card p-4 max-[700px]:p-3">
                 <div className="chart-header">
                     <div>
-                        <h2 className="card-title">每日高度角图 Daily Altitude Chart</h2>
-                        <p className="card-subtitle">24小时高度角轨迹 · Sun and Moon altitude over local solar day</p>
+                        <h2 className="bi-title">
+                            <span className="bi-title-zh">每日高度角图</span>
+                            <span className="bi-title-en">DAILY ALTITUDE CHART</span>
+                        </h2>
+                        <p className="bi-subtitle">
+                            <span className="bi-subtitle-zh">24小时高度角轨迹</span>
+                            <span className="bi-subtitle-en">Sun and Moon altitude over local solar day</span>
+                        </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-[11px]">
                         <span className="legend-pill"><span className="legend-dot bg-[#FDB813]" />Sun 太阳</span>
